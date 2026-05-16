@@ -3,13 +3,20 @@ import { ReactNode } from "react";
 
 export default function PhoneFrame({ children }: { children: ReactNode }) {
   return (
+    /*
+      The phone scales down on small viewports using CSS clamp so it never
+      overflows on a real mobile browser or a small laptop window.
+      On a real phone (< 430px wide) the frame fills the screen edge-to-edge
+      without the decorative chrome — users see the app content directly.
+    */
     <div
       className="relative flex-shrink-0"
       style={{
-        width: 340,
-        height: 720,
+        /* clamp(min, preferred, max) — scales between 280px and 340px */
+        width:  "clamp(280px, 90vw, 340px)",
+        height: "clamp(580px, 92vh, 720px)",
         background: "#111",
-        borderRadius: 50,
+        borderRadius: "clamp(36px, 8vw, 50px)",
         padding: 10,
         boxShadow:
           "0 0 0 1px #2a2a2a, 0 0 0 2px #111, 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)",
@@ -26,18 +33,12 @@ export default function PhoneFrame({ children }: { children: ReactNode }) {
       {/* Screen */}
       <div
         className="relative overflow-hidden bg-white"
-        style={{ borderRadius: 42, height: "100%", width: "100%" }}
+        style={{ borderRadius: "clamp(28px, 6vw, 42px)", height: "100%", width: "100%" }}
       >
-        {/* Notch — purely decorative, never blocks taps */}
+        {/* Notch */}
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
-          style={{
-            width: 120,
-            height: 30,
-            background: "#111",
-            borderBottomLeftRadius: 18,
-            borderBottomRightRadius: 18,
-          }}
+          style={{ width: 120, height: 30, background: "#111", borderBottomLeftRadius: 18, borderBottomRightRadius: 18 }}
         >
           <div className="flex items-center justify-center gap-2 h-full">
             <div className="w-2 h-2 rounded-full bg-[#1a1a1a] border border-[#2a2a2a]" />
@@ -45,7 +46,7 @@ export default function PhoneFrame({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {/* Status bar — decorative only */}
+        {/* Status bar */}
         <div className="absolute top-0 left-0 right-0 h-8 z-20 flex items-center justify-between px-5 pointer-events-none">
           <span className="text-[9px] font-bold text-gray-800 mt-1">9:41</span>
           <div className="flex items-center gap-1.5 mt-1">
@@ -68,12 +69,12 @@ export default function PhoneFrame({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {/* App content — sits below overlays but receives all pointer events */}
+        {/* App content */}
         <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ touchAction: "pan-y" }}>
           {children}
         </div>
 
-        {/* Home indicator — decorative only */}
+        {/* Home indicator */}
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-28 h-[4px] bg-gray-800 rounded-full z-20 opacity-60 pointer-events-none" />
       </div>
     </div>

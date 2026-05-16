@@ -70,7 +70,7 @@ export default function AdminLoginWeb({ role, mode, onLogin, onBack, onSwitchMod
 
       {/* ── LEFT PANEL — branding ── */}
       <div
-        className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 p-10"
+        className="hidden md:flex flex-col justify-between md:w-[320px] lg:w-[420px] flex-shrink-0 p-8 lg:p-10"
         style={{ background: cfg.gradient }}
       >
         {/* Logo */}
@@ -120,8 +120,8 @@ export default function AdminLoginWeb({ role, mode, onLogin, onBack, onSwitchMod
       </div>
 
       {/* ── RIGHT PANEL — form ── */}
-      <div className="flex-1 flex items-center justify-center p-8 overflow-auto">
-        <div className="w-full max-w-md">
+      <div className="flex-1 flex items-start md:items-center justify-center p-6 md:p-8 overflow-auto min-h-screen md:min-h-0">
+        <div className="w-full max-w-md py-6 md:py-0">
 
           {/* Back button */}
           <button

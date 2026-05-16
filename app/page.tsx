@@ -253,8 +253,8 @@ function AppShell() {
           <div className="w-px h-16 bg-white/20" />
         </div>
 
-        {/* Phone — absolutely centered, never moves */}
-        <div className="absolute inset-0 flex items-center justify-center z-20">
+        {/* Phone — absolutely centered, scales with viewport */}
+        <div className="absolute inset-0 flex items-center justify-center z-20 p-4">
           <PhoneFrame>
             {renderScreen()}
             {/* Global PWD voice assistant — follows user across all screens */}

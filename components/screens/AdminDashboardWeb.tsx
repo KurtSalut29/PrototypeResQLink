@@ -40,10 +40,10 @@ export default function AdminDashboardWeb({ onNavigate, incomingAlertDismissed, 
   const reject  = (badge: string) => setPendingList(l => l.filter(r => r.badge !== badge));
 
   return (
-    <div className="p-6 h-full overflow-auto">
+    <div className="p-4 md:p-6 h-full overflow-auto">
 
       {/* ── STATS ROW ── */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-5 md:mb-6">
         {[
           { label: "Total Responders", value: "12", sub: "+2 this month",  color: "#3b82f6", bg: "#eff6ff",  icon: Users         },
           { label: "Active Incidents", value: "1",  sub: "1 critical",     color: "#ef4444", bg: "#fef2f2",  icon: TriangleAlert },
@@ -65,24 +65,25 @@ export default function AdminDashboardWeb({ onNavigate, incomingAlertDismissed, 
       </div>
 
       {/* ── MAIN GRID ── */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
-        {/* ── LEFT: Incidents + AI ── */}
-        <div className="col-span-2 flex flex-col gap-4">
+        {/* ── LEFT: Incidents + Responders ── */}
+        <div className="xl:col-span-2 flex flex-col gap-4">
 
-          {/* Recent Incidents */}
+          {/* Recent Incidents — scrollable table on small screens */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="px-4 md:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ClipboardList size={16} className="text-gray-500" />
                 <h2 className="text-sm font-black text-gray-900">Recent Incidents</h2>
               </div>
               <button onClick={() => onNavigate("incident-management")}
-                className="text-xs font-bold text-[#D32F2F] hover:underline">
+                className="text-xs font-bold text-[#D32F2F] hover:underline whitespace-nowrap">
                 View all →
               </button>
             </div>
-            <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px]">
               <thead>
                 <tr className="border-b border-gray-100">
                   {["ID", "Type", "Location", "Time", "Status", ""].map(h => (
@@ -97,28 +98,23 @@ export default function AdminDashboardWeb({ onNavigate, incomingAlertDismissed, 
                     <tr key={inc.id}
                       className="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={() => onNavigate("incident-management")}>
-                      <td className="px-5 py-3 text-xs font-bold text-gray-500">{inc.id}</td>
-                      <td className="px-5 py-3">
+                      <td className="px-4 md:px-5 py-3 text-xs font-bold text-gray-500">{inc.id}</td>
+                      <td className="px-4 md:px-5 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ background: inc.bg }}>
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: inc.bg }}>
                             <Icon size={13} style={{ color: inc.color }} />
                           </div>
                           <span className="text-xs font-bold text-gray-800">{inc.type}</span>
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-xs text-gray-500">{inc.location}</td>
-                      <td className="px-5 py-3 text-xs text-gray-400">{inc.time}</td>
-                      <td className="px-5 py-3">
-                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                          inc.status === "active"
-                            ? "bg-red-100 text-red-600"
-                            : "bg-green-100 text-green-700"
-                        }`}>
+                      <td className="px-4 md:px-5 py-3 text-xs text-gray-500">{inc.location}</td>
+                      <td className="px-4 md:px-5 py-3 text-xs text-gray-400">{inc.time}</td>
+                      <td className="px-4 md:px-5 py-3">
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${inc.status === "active" ? "bg-red-100 text-red-600" : "bg-green-100 text-green-700"}`}>
                           {inc.status === "active" ? "Active" : "Resolved"}
                         </span>
                       </td>
-                      <td className="px-5 py-3">
+                      <td className="px-4 md:px-5 py-3">
                         <ChevronRight size={14} className="text-gray-300" />
                       </td>
                     </tr>
@@ -126,11 +122,12 @@ export default function AdminDashboardWeb({ onNavigate, incomingAlertDismissed, 
                 })}
               </tbody>
             </table>
+            </div>{/* end overflow-x-auto */}
           </div>
 
           {/* Responder Status */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="px-4 md:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users size={16} className="text-gray-500" />
                 <h2 className="text-sm font-black text-gray-900">Responder Status</h2>
@@ -169,7 +166,7 @@ export default function AdminDashboardWeb({ onNavigate, incomingAlertDismissed, 
         </div>
 
         {/* ── RIGHT: Pending approvals + AI + Quick actions ── */}
-        <div className="flex flex-col gap-4">
+        <div className="xl:col-span-1 flex flex-col gap-4">
 
           {/* Pending Approvals */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

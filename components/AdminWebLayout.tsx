@@ -2,8 +2,7 @@
 import { useState } from "react";
 import {
   LayoutDashboard, ClipboardList, Users, Map, Bell, Settings,
-  LogOut, ChevronRight, Menu, X, ShieldCheck, TriangleAlert,
-  CheckCircle2, Clock, Flame, Waves, HeartPulse, Car, Sparkles,
+  LogOut, ChevronRight, Menu, X, ShieldCheck,
 } from "lucide-react";
 
 interface AdminWebLayoutProps {
@@ -14,133 +13,166 @@ interface AdminWebLayoutProps {
 }
 
 const NAV_ITEMS = [
-  { id: "admin-dashboard",      icon: LayoutDashboard, label: "Dashboard",        badge: null },
-  { id: "incident-management",  icon: ClipboardList,   label: "Incidents",        badge: 1    },
-  { id: "manage-responders",    icon: Users,           label: "Responders",       badge: 3    },
-  { id: "map",                  icon: Map,             label: "Live Map",         badge: null },
-  { id: "notifications",        icon: Bell,            label: "Notifications",    badge: 3    },
-  { id: "profile",              icon: Settings,        label: "Settings",         badge: null },
+  { id: "admin-dashboard",     icon: LayoutDashboard, label: "Dashboard",   badge: null },
+  { id: "incident-management", icon: ClipboardList,   label: "Incidents",   badge: 1    },
+  { id: "manage-responders",   icon: Users,           label: "Responders",  badge: 3    },
+  { id: "map",                 icon: Map,             label: "Live Map",    badge: null },
+  { id: "notifications",       icon: Bell,            label: "Notifications",badge: 3   },
+  { id: "profile",             icon: Settings,        label: "Settings",    badge: null },
 ];
 
-const RECENT_INCIDENTS = [
-  { id: "INC-004", type: "Fire",    location: "Brgy. Libertad",    time: "10:32 AM", status: "active",   icon: Flame,     color: "#f97316" },
-  { id: "INC-003", type: "Medical", location: "Brgy. Padre Iñigo", time: "9:01 AM",  status: "resolved", icon: HeartPulse,color: "#ef4444" },
-  { id: "INC-002", type: "Flood",   location: "Brgy. Caraycaray",  time: "Yesterday",status: "resolved", icon: Waves,     color: "#3b82f6" },
-];
+const SIDEBAR_BG = "linear-gradient(180deg, #7f0000 0%, #B71C1C 60%, #c62828 100%)";
 
 export default function AdminWebLayout({ activeScreen, onNavigate, onLogout, children }: AdminWebLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // On lg+ the sidebar is always visible and can be collapsed to icon-only.
+  // On md and below it slides in as an overlay.
+  const [collapsed, setCollapsed] = useState(false);   // lg: icon-only mode
+  const [mobileOpen, setMobileOpen] = useState(false); // md-: overlay open
+
+  const SidebarContent = ({ mobile = false }: { mobile?: boolean }) => (
+    <div
+      className="flex flex-col h-full"
+      style={{ background: SIDEBAR_BG }}
+    >
+      {/* Logo row */}
+      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10 flex-shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+          <ShieldCheck size={16} className="text-white" />
+        </div>
+        {(!collapsed || mobile) && (
+          <div className="min-w-0 flex-1">
+            <p className="text-white font-black text-sm tracking-wide leading-tight">ResQLink</p>
+            <p className="text-white/50 text-[9px] tracking-widest uppercase">Station Admin</p>
+          </div>
+        )}
+        <button
+          onClick={() => mobile ? setMobileOpen(false) : setCollapsed(v => !v)}
+          className="text-white/60 hover:text-white transition-colors flex-shrink-0"
+          aria-label="Toggle sidebar"
+        >
+          {mobile ? <X size={18} /> : collapsed ? <Menu size={16} /> : <X size={16} />}
+        </button>
+      </div>
+
+      {/* Station badge */}
+      {(!collapsed || mobile) && (
+        <div className="mx-3 mt-3 mb-1 bg-white/10 rounded-xl px-3 py-2.5 flex-shrink-0">
+          <p className="text-white/50 text-[9px] uppercase tracking-widest">Station</p>
+          <p className="text-white font-black text-xs mt-0.5">Naval PNP Station</p>
+          <div className="flex items-center gap-1.5 mt-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+            <p className="text-green-300 text-[9px] font-semibold">Online · 12 responders</p>
+          </div>
+        </div>
+      )}
+
+      {/* Nav */}
+      <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5 overflow-y-auto">
+        {NAV_ITEMS.map(({ id, icon: Icon, label, badge }) => {
+          const isActive = activeScreen === id;
+          return (
+            <button
+              key={id}
+              onClick={() => { onNavigate(id); setMobileOpen(false); }}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left group w-full"
+              style={{ background: isActive ? "rgba(255,255,255,0.18)" : "transparent" }}
+              title={collapsed && !mobile ? label : undefined}
+            >
+              <div className="relative flex-shrink-0">
+                <Icon size={18} className={isActive ? "text-white" : "text-white/60 group-hover:text-white/90"} />
+                {badge && (
+                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-400 rounded-full text-[8px] text-white flex items-center justify-center font-black">
+                    {badge}
+                  </span>
+                )}
+              </div>
+              {(!collapsed || mobile) && (
+                <span className={`text-sm font-semibold flex-1 ${isActive ? "text-white" : "text-white/70 group-hover:text-white"}`}>
+                  {label}
+                </span>
+              )}
+              {(!collapsed || mobile) && isActive && <ChevronRight size={14} className="text-white/60 flex-shrink-0" />}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Logout */}
+      <div className="px-2 pb-4 flex-shrink-0 border-t border-white/10 pt-3">
+        <button
+          onClick={onLogout}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-white/60 hover:text-white hover:bg-white/10 transition-all"
+          title={collapsed && !mobile ? "Log out" : undefined}
+        >
+          <LogOut size={18} className="flex-shrink-0" />
+          {(!collapsed || mobile) && <span className="text-sm font-semibold">Log out</span>}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="desktop-layout flex h-screen w-screen overflow-hidden bg-gray-50">
 
-      {/* ── SIDEBAR ── */}
+      {/* ── MOBILE OVERLAY SIDEBAR (< lg) ── */}
+      {mobileOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+          {/* Drawer */}
+          <div className="fixed top-0 left-0 bottom-0 w-64 z-50 lg:hidden shadow-2xl">
+            <SidebarContent mobile />
+          </div>
+        </>
+      )}
+
+      {/* ── DESKTOP SIDEBAR (lg+) ── */}
       <aside
-        className="flex-shrink-0 flex flex-col transition-all duration-200"
+        className="hidden lg:flex flex-col flex-shrink-0 transition-all duration-200"
         style={{
-          width: sidebarOpen ? 240 : 64,
-          background: "linear-gradient(180deg, #7f0000 0%, #B71C1C 60%, #c62828 100%)",
+          width: collapsed ? 64 : 240,
+          background: SIDEBAR_BG,
           boxShadow: "2px 0 16px rgba(0,0,0,0.18)",
         }}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10 flex-shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <ShieldCheck size={16} className="text-white" />
-          </div>
-          {sidebarOpen && (
-            <div className="min-w-0">
-              <p className="text-white font-black text-sm tracking-wide leading-tight">ResQLink</p>
-              <p className="text-white/50 text-[9px] tracking-widest uppercase">Station Admin</p>
-            </div>
-          )}
-          <button
-            onClick={() => setSidebarOpen(v => !v)}
-            className="ml-auto text-white/60 hover:text-white transition-colors flex-shrink-0"
-          >
-            {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
-          </button>
-        </div>
-
-        {/* Station badge */}
-        {sidebarOpen && (
-          <div className="mx-3 mt-3 mb-1 bg-white/10 rounded-xl px-3 py-2.5 flex-shrink-0">
-            <p className="text-white/50 text-[9px] uppercase tracking-widest">Station</p>
-            <p className="text-white font-black text-xs mt-0.5">Naval PNP Station</p>
-            <div className="flex items-center gap-1.5 mt-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-              <p className="text-green-300 text-[9px] font-semibold">Online · 12 responders</p>
-            </div>
-          </div>
-        )}
-
-        {/* Nav items */}
-        <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5 overflow-y-auto">
-          {NAV_ITEMS.map(({ id, icon: Icon, label, badge }) => {
-            const isActive = activeScreen === id;
-            return (
-              <button
-                key={id}
-                onClick={() => onNavigate(id)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left group"
-                style={{
-                  background: isActive ? "rgba(255,255,255,0.18)" : "transparent",
-                }}
-                title={!sidebarOpen ? label : undefined}
-              >
-                <div className="relative flex-shrink-0">
-                  <Icon size={18} className={isActive ? "text-white" : "text-white/60 group-hover:text-white/90"} />
-                  {badge && (
-                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-400 rounded-full text-[8px] text-white flex items-center justify-center font-black">
-                      {badge}
-                    </span>
-                  )}
-                </div>
-                {sidebarOpen && (
-                  <span className={`text-sm font-semibold flex-1 ${isActive ? "text-white" : "text-white/70 group-hover:text-white"}`}>
-                    {label}
-                  </span>
-                )}
-                {sidebarOpen && isActive && <ChevronRight size={14} className="text-white/60 flex-shrink-0" />}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Logout */}
-        <div className="px-2 pb-4 flex-shrink-0 border-t border-white/10 pt-3">
-          <button
-            onClick={onLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-white/60 hover:text-white hover:bg-white/10 transition-all"
-            title={!sidebarOpen ? "Log out" : undefined}
-          >
-            <LogOut size={18} className="flex-shrink-0" />
-            {sidebarOpen && <span className="text-sm font-semibold">Log out</span>}
-          </button>
-        </div>
+        <SidebarContent />
       </aside>
 
       {/* ── MAIN AREA ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Top bar */}
-        <header className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between"
-          style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-          <div>
-            <h1 className="text-base font-black text-gray-900">
-              {NAV_ITEMS.find(n => n.id === activeScreen)?.label ?? "Dashboard"}
-            </h1>
-            <p className="text-[11px] text-gray-400 mt-0.5">Naval PNP Station · Biliran Island</p>
+        <header
+          className="flex-shrink-0 bg-white border-b border-gray-200 flex items-center justify-between"
+          style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)", padding: "10px 16px" }}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Hamburger — only visible on < lg */}
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors flex-shrink-0"
+              aria-label="Open menu"
+            >
+              <Menu size={18} className="text-gray-600" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-sm font-black text-gray-900 truncate">
+                {NAV_ITEMS.find(n => n.id === activeScreen)?.label ?? "Dashboard"}
+              </h1>
+              <p className="text-[10px] text-gray-400 hidden sm:block">Naval PNP Station · Biliran Island</p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Live alert pill */}
-            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-full px-3 py-1.5">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Alert pill — hidden on very small screens */}
+            <div className="hidden sm:flex items-center gap-2 bg-red-50 border border-red-200 rounded-full px-3 py-1.5">
               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[11px] font-bold text-red-600">1 Active Incident</span>
+              <span className="text-[11px] font-bold text-red-600 whitespace-nowrap">1 Active</span>
             </div>
 
-            {/* Notifications */}
             <button
               onClick={() => onNavigate("notifications")}
               className="relative w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -149,9 +181,8 @@ export default function AdminWebLayout({ activeScreen, onNavigate, onLogout, chi
               <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-amber-500 rounded-full text-[8px] text-white flex items-center justify-center font-black">3</span>
             </button>
 
-            {/* Avatar */}
-            <div className="flex items-center gap-2.5 pl-3 border-l border-gray-200">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+            <div className="flex items-center gap-2 pl-2 border-l border-gray-200">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-xs font-black">SA</span>
               </div>
               <div className="hidden md:block">
@@ -164,9 +195,7 @@ export default function AdminWebLayout({ activeScreen, onNavigate, onLogout, chi
 
         {/* Page content */}
         <main className="flex-1 overflow-auto bg-gray-50">
-          <div className="h-full">
-            {children}
-          </div>
+          {children}
         </main>
       </div>
     </div>

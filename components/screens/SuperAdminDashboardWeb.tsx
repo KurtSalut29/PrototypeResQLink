@@ -42,10 +42,10 @@ export default function SuperAdminDashboardWeb({ onNavigate }: Props) {
   const filteredIncidents = muniFilter === "All" ? allIncidents : allIncidents.filter(i => i.municipality === muniFilter);
 
   return (
-    <div className="p-6 h-full overflow-auto">
+    <div className="p-4 md:p-6 h-full overflow-auto">
 
       {/* ── STATS ROW ── */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-5 md:mb-6">
         {[
           { label: "Total Residents",   value: "1,284", sub: "Across 8 municipalities", color: "#22c55e", bg: "#f0fdf4",  icon: Users         },
           { label: "Total Responders",  value: "52",    sub: "10 stations active",       color: "#3b82f6", bg: "#eff6ff",  icon: ShieldCheck   },
@@ -81,14 +81,14 @@ export default function SuperAdminDashboardWeb({ onNavigate }: Props) {
       </div>
 
       {/* ── MAIN GRID ── */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
         {/* ── LEFT: Stations + Incidents ── */}
-        <div className="col-span-2 flex flex-col gap-4">
+        <div className="xl:col-span-2 flex flex-col gap-4">
 
           {/* Stations table */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="px-4 md:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Building2 size={16} className="text-gray-500" />
                 <h2 className="text-sm font-black text-gray-900">
@@ -97,7 +97,8 @@ export default function SuperAdminDashboardWeb({ onNavigate }: Props) {
                 </h2>
               </div>
             </div>
-            <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[520px]">
               <thead>
                 <tr className="border-b border-gray-100">
                   {["Station", "Agency", "Municipality", "Responders", "Active", "Status"].map(h => (
@@ -134,11 +135,12 @@ export default function SuperAdminDashboardWeb({ onNavigate }: Props) {
                 })}
               </tbody>
             </table>
+            </div>{/* end overflow-x-auto stations */}
           </div>
 
           {/* Incidents table */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="px-4 md:px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TriangleAlert size={16} className="text-gray-500" />
                 <h2 className="text-sm font-black text-gray-900">
@@ -147,13 +149,14 @@ export default function SuperAdminDashboardWeb({ onNavigate }: Props) {
                 </h2>
               </div>
               <button onClick={() => onNavigate("incident-management")}
-                className="text-xs font-bold text-purple-600 hover:underline">View all →</button>
+                className="text-xs font-bold text-purple-600 hover:underline whitespace-nowrap">View all →</button>
             </div>
-            <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[560px]">
               <thead>
                 <tr className="border-b border-gray-100">
                   {["ID", "Type", "Location", "Station", "Municipality", "Time", "Status"].map(h => (
-                    <th key={h} className="px-5 py-2.5 text-left text-[10px] font-black text-gray-400 uppercase tracking-wide">{h}</th>
+                    <th key={h} className="px-4 md:px-5 py-2.5 text-left text-[10px] font-black text-gray-400 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -163,8 +166,8 @@ export default function SuperAdminDashboardWeb({ onNavigate }: Props) {
                   return (
                     <tr key={inc.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={() => onNavigate("incident-management")}>
-                      <td className="px-5 py-3 text-xs font-bold text-gray-500">{inc.id}</td>
-                      <td className="px-5 py-3">
+                      <td className="px-4 md:px-5 py-3 text-xs font-bold text-gray-500">{inc.id}</td>
+                      <td className="px-4 md:px-5 py-3">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: inc.bg }}>
                             <Icon size={11} style={{ color: inc.color }} />
@@ -172,11 +175,11 @@ export default function SuperAdminDashboardWeb({ onNavigate }: Props) {
                           <span className="text-xs font-bold text-gray-800">{inc.type}</span>
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-xs text-gray-500">{inc.location}</td>
-                      <td className="px-5 py-3 text-xs text-gray-500">{inc.station}</td>
-                      <td className="px-5 py-3 text-xs text-gray-500">{inc.municipality}</td>
-                      <td className="px-5 py-3 text-xs text-gray-400">{inc.time}</td>
-                      <td className="px-5 py-3">
+                      <td className="px-4 md:px-5 py-3 text-xs text-gray-500">{inc.location}</td>
+                      <td className="px-4 md:px-5 py-3 text-xs text-gray-500">{inc.station}</td>
+                      <td className="px-4 md:px-5 py-3 text-xs text-gray-500">{inc.municipality}</td>
+                      <td className="px-4 md:px-5 py-3 text-xs text-gray-400">{inc.time}</td>
+                      <td className="px-4 md:px-5 py-3">
                         <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
                           inc.status === "active" ? "bg-red-100 text-red-600" : "bg-green-100 text-green-700"
                         }`}>
@@ -188,15 +191,16 @@ export default function SuperAdminDashboardWeb({ onNavigate }: Props) {
                 })}
               </tbody>
             </table>
+            </div>{/* end overflow-x-auto incidents */}
           </div>
         </div>
 
         {/* ── RIGHT: Alerts + AI + Actions ── */}
-        <div className="flex flex-col gap-4">
+        <div className="xl:col-span-1 flex flex-col gap-4">
 
           {/* System Alerts */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+            <div className="px-4 md:px-5 py-4 border-b border-gray-100 flex items-center gap-2">
               <TriangleAlert size={15} className="text-amber-500" />
               <h2 className="text-sm font-black text-gray-900">System Alerts</h2>
             </div>
