@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-red-primary: #D32F2F;
+  --color-red-accent: #FF5252;
+  --color-red-bg: #B71C1C;
+  --color-red-dark: #7f0000;
+  --color-surface: #F5F5F5;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #666666;
+  --color-status-critical: #D32F2F;
+  --color-status-moderate: #FF9800;
+  --color-status-minor: #4CAF50;
+  --color-status-resolved: #9E9E9E;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* { box-sizing: border-box; }
+
+html {
+  font-family: 'Inter', 'Poppins', system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  scroll-behavior: auto;
+  overscroll-behavior: none;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  /* position fixed prevents the browser from scrolling the page when
+     an input is focused inside the phone frame. The desktop layout
+     overrides this via the .desktop-layout class on its root element. */
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+/* Desktop admin/superadmin layout — allow normal document flow */
+.desktop-layout {
+  position: static !important;
+  overflow: auto !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+/* Next.js root */
+#__next {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.phone-scroll::-webkit-scrollbar { display: none; }
+.phone-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Shared alert animations ── */
+@keyframes alertflash { 0%,100%{opacity:0} 50%{opacity:1} }
+@keyframes slideup    { from{transform:translateY(100%)} to{transform:translateY(0)} }
+@keyframes ping       { 0%{transform:scale(1);opacity:1} 75%,100%{transform:scale(2.2);opacity:0} }
+@keyframes ripple     { 0%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.6)} }
+
+/* ── Phone-frame input fix ──
+   The body is position:fixed to prevent scroll-into-view from jumping the page.
+   Inputs inside the phone frame can still receive focus and be typed into normally.
+   We only need to prevent the *viewport* from scrolling, not the input itself.     */
+.phone-input {
+  /* Allow the input to be focused and typed into */
+  pointer-events: auto;
+}
+/* When an input inside the phone frame is focused, prevent iOS from zooming */
+@media screen and (max-width: 768px) {
+  .phone-input { font-size: 16px; }
 }
