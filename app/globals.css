@@ -51,6 +51,25 @@ body {
   max-height: 100vh !important;
 }
 
+/* Sidebar overlay for tablet (md) — slides over content instead of pushing it */
+@media (max-width: 1023px) {
+  .sidebar-overlay {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+  }
+  .sidebar-backdrop {
+    display: block;
+  }
+}
+@media (min-width: 1024px) {
+  .sidebar-backdrop {
+    display: none !important;
+  }
+}
+
 /* Next.js root */
 #__next {
   height: 100%;
