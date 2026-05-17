@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Shield, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Shield, Eye, EyeOff, ArrowLeft, Building2, ChevronDown } from "lucide-react";
 
 interface LoginScreenProps {
   role: "resident" | "responder" | "admin" | "superadmin";
@@ -9,10 +9,27 @@ interface LoginScreenProps {
   onRegister: () => void;
 }
 
+const STATIONS = [
+  "Naval PNP Station",
+  "Biliran PNP Station",
+  "Caibiran PNP Station",
+  "Almeria PNP Station",
+  "Kawayan PNP Station",
+  "Culaba PNP Station",
+  "Cabucgayan PNP Station",
+  "Naval BFP Station",
+  "Biliran BFP Station",
+  "Naval MDRRMO",
+];
+
 export default function LoginScreen({ role, onLogin, onBack, onRegister }: LoginScreenProps) {
   const [showPass, setShowPass] = useState(false);
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
+  const [station, setStation]   = useState("");
+
+  const needsStation = role === "responder" || role === "admin";
+  const canSubmit = !needsStation || station !== "";
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -71,11 +88,36 @@ export default function LoginScreen({ role, onLogin, onBack, onRegister }: Login
           <div className="flex justify-end">
             <button className="text-xs text-[#D32F2F] font-semibold">Forgot password?</button>
           </div>
+
+          {/* Station selector — only for responder and admin */}
+          {needsStation && (
+            <div>
+              <label className="text-xs font-semibold text-gray-600 mb-1.5 block flex items-center gap-1">
+                <Building2 size={12} className="text-gray-500" />
+                {role === "admin" ? "Your Station" : "Assigned Station"}
+              </label>
+              <div className="relative">
+                <select
+                  value={station}
+                  onChange={e => setStation(e.target.value)}
+                  className="phone-input w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 outline-none focus:border-[#D32F2F] transition-colors appearance-none pr-9"
+                  style={{ color: station ? "#111827" : "#9ca3af" }}
+                >
+                  <option value="" disabled>Select your station…</option>
+                  {STATIONS.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+          )}
         </div>
 
         <button
-          onClick={onLogin}
-          className="w-full mt-6 py-4 rounded-full bg-[#D32F2F] text-white font-bold text-sm shadow-lg active:opacity-80 transition-opacity"
+          onClick={() => { if (canSubmit) onLogin(); }}
+          disabled={!canSubmit}
+          className={`w-full mt-6 py-4 rounded-full text-white font-bold text-sm shadow-lg transition-opacity ${canSubmit ? "bg-[#D32F2F] active:opacity-80" : "bg-gray-300 cursor-not-allowed"}`}
         >
           Sign In
         </button>

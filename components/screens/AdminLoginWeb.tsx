@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Shield, Eye, EyeOff, Globe, ShieldCheck, ArrowLeft, CheckCircle2, User, Lock, Mail, Phone, Building2 } from "lucide-react";
+import { Shield, Eye, EyeOff, Globe, ShieldCheck, ArrowLeft, CheckCircle2, User, Lock, Mail, Phone, Building2, ChevronDown } from "lucide-react";
 
 interface Props {
   role: "admin" | "superadmin";
@@ -9,6 +9,19 @@ interface Props {
   onBack: () => void;           // back to role-select
   onSwitchMode: () => void;     // toggle login ↔ register
 }
+
+const STATIONS = [
+  "Naval PNP Station",
+  "Biliran PNP Station",
+  "Caibiran PNP Station",
+  "Almeria PNP Station",
+  "Kawayan PNP Station",
+  "Culaba PNP Station",
+  "Cabucgayan PNP Station",
+  "Naval BFP Station",
+  "Biliran BFP Station",
+  "Naval MDRRMO",
+];
 
 const CONFIG = {
   admin: {
@@ -60,10 +73,15 @@ export default function AdminLoginWeb({ role, mode, onLogin, onBack, onSwitchMod
   const [fullName, setFullName]         = useState("");
   const [stationName, setStationName]   = useState("");
   const [contactNo, setContactNo]       = useState("");
+  const [station, setStation]           = useState("");
 
   const cfg = CONFIG[role];
   const Icon = cfg.icon;
   const isLogin = mode === "login";
+
+  // Station selection is required for admin login; superadmin has system-wide scope
+  const needsStation = role === "admin" && isLogin;
+  const canSubmit = !needsStation || station !== "";
 
   return (
     <div className="desktop-layout min-h-screen w-screen flex" style={{ background: "#f8fafc" }}>
@@ -263,6 +281,28 @@ export default function AdminLoginWeb({ role, mode, onLogin, onBack, onSwitchMod
               </div>
             )}
 
+            {/* Station selector — admin login only */}
+            {needsStation && (
+              <div>
+                <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Your Station</label>
+                <div className="relative">
+                  <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <select
+                    value={station}
+                    onChange={e => setStation(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl pl-10 pr-9 py-3 text-sm bg-gray-50 outline-none transition-colors focus:border-gray-400 focus:bg-white appearance-none"
+                    style={{ color: station ? "#111827" : "#9ca3af" }}
+                  >
+                    <option value="" disabled>Select your station…</option>
+                    {STATIONS.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+            )}
+
             {/* Forgot password (login only) */}
             {isLogin && (
               <div className="flex justify-end -mt-1">
@@ -276,7 +316,8 @@ export default function AdminLoginWeb({ role, mode, onLogin, onBack, onSwitchMod
             {/* Submit */}
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl text-white font-bold text-sm transition-opacity hover:opacity-90 mt-2"
+              disabled={!canSubmit}
+              className={`w-full py-3.5 rounded-xl text-white font-bold text-sm transition-opacity mt-2 ${canSubmit ? "hover:opacity-90" : "opacity-40 cursor-not-allowed"}`}
               style={{ background: cfg.gradient }}
             >
               {isLogin ? "Sign In" : "Create Account"}
