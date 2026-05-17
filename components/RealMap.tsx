@@ -320,7 +320,10 @@ export default function RealMap({
       }).addTo(map);
 
       // ── Helper: register a layer as part of the incident group ──
+      // Guard against the map being destroyed (component unmounted) before
+      // async operations (OSRM fetches) complete.
       const addIncident = (layer: any) => {
+        if (cancelled || !mapRef.current) return layer;
         incidentLayerRef.current.push(layer);
         layer.addTo(map);
         return layer;
@@ -394,6 +397,9 @@ export default function RealMap({
             durationSec = route.duration;
           }
         } catch { /* network error — keep straight-line fallback */ }
+
+        // Bail out if the component unmounted while the fetch was in flight
+        if (cancelled || !mapRef.current) return;
 
         const eta = etaLabel(durationSec, station.status);
 

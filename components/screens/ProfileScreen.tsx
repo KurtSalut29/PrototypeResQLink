@@ -22,7 +22,6 @@ const menuByRole = {
     { icon: Bell,          label: "Notifications",     sub: "Manage alert preferences",     screen: "notifications" },
     { icon: Phone,         label: "Emergency Contacts",sub: "Unit and dispatch numbers",    screen: "" },
     { icon: Lock,          label: "Change Password",   sub: "Update your credentials",      screen: "change-password" },
-    { icon: Accessibility, label: "PWD Accessibility", sub: "Blind, deaf & motor support",  screen: "pwd-accessibility" },
     { icon: HelpCircle,    label: "Help & Support",    sub: "FAQs and contact info",        screen: "help-support" },
   ],
   admin: [
