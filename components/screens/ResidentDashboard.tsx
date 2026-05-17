@@ -1,6 +1,6 @@
 "use client";
-import { Bell, X, MapPin, TriangleAlert, ClipboardList, ChevronRight, Activity, Sparkles, Flame, Waves, HeartPulse, Car, ShieldAlert, MoreHorizontal, CheckCircle2, FileText, Camera, Mic, MicOff, ImagePlus } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Bell, X, MapPin, TriangleAlert, ClipboardList, ChevronRight, Activity, Sparkles, Flame, Waves, HeartPulse, Car, ShieldAlert, MoreHorizontal, CheckCircle2, FileText, Camera, Mic, MicOff, ImagePlus, Zap, Hand } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import BottomNav from "../navigation/BottomNav";
 import StatusBadge from "../ui/StatusBadge";
 import IncidentCard from "../ui/IncidentCard";
@@ -78,8 +78,69 @@ export default function ResidentDashboard({ onNavigate, reportAcceptedDismissed,
   const openSOS = () => { setSosOpen(true); setSosStep("type"); setSelectedType(null); setPhotoTaken(false); setVoiceDesc(""); setCountdown(3); };
   const closeSOS = () => { if (sosStep !== "analyzing" && sosStep !== "sent") setSosOpen(false); };
 
+  // ── Motor mode: hold-to-confirm SOS ──────────────────────────────────────
+  // Requires a 3-second sustained press before firing — prevents accidental
+  // or abusive triggers while still being accessible (no multi-step navigation).
+  const [holdProgress, setHoldProgress] = useState(0);   // 0–100
+  const holdTimerRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const holdStartRef  = useRef<number>(0);
+  const HOLD_DURATION = 3000; // ms
+
+  const startHold = () => {
+    if (!motor) { openSOS(); return; }
+    holdStartRef.current = Date.now();
+    holdTimerRef.current = setInterval(() => {
+      const elapsed  = Date.now() - holdStartRef.current;
+      const progress = Math.min((elapsed / HOLD_DURATION) * 100, 100);
+      setHoldProgress(progress);
+      if (progress >= 100) {
+        clearInterval(holdTimerRef.current!);
+        holdTimerRef.current = null;
+        setHoldProgress(0);
+        // Fire SOS — skip multi-step sheet, go straight to analyzing
+        setSosOpen(true);
+        setSosStep("analyzing");
+      }
+    }, 30);
+  };
+
+  const cancelHold = () => {
+    if (holdTimerRef.current) {
+      clearInterval(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    setHoldProgress(0);
+  };
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => { if (holdTimerRef.current) clearInterval(holdTimerRef.current); };
+  }, []);
+
   return (
     <div className="flex flex-col h-full bg-[#F5F5F5] relative">
+
+      {/* ── DEAF MODE: persistent visual alert bar ── */}
+      {deaf && (
+        <div
+          className="flex-shrink-0 flex items-center gap-2 px-4 py-2"
+          style={{
+            background: "linear-gradient(90deg, #fbbf24, #f59e0b)",
+            animation: "deafpulse 2s ease-in-out infinite",
+          }}
+        >
+          <span style={{ fontSize: 14 }}>🔔</span>
+          <p style={{ fontSize: 10, fontWeight: 900, color: "#78350f", margin: 0, flex: 1 }}>
+            VISUAL ALERTS ON — All sounds replaced with visual cues
+          </p>
+          <div className="w-2 h-2 rounded-full bg-amber-900 animate-ping" />
+        </div>
+      )}
+
+      <style>{`
+        @keyframes deafpulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+        @keyframes deafflash  { 0%,100%{opacity:0} 20%,80%{opacity:1} }
+      `}</style>
 
       {/* Header */}
       <div className="bg-white px-5 pt-10 pb-4 flex-shrink-0" style={{ boxShadow: "0 1px 0 #f0f0f0" }}>
@@ -122,9 +183,17 @@ export default function ResidentDashboard({ onNavigate, reportAcceptedDismissed,
               </div>
             )}
             {motor && (
-              <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2.5">
-                <span style={{ fontSize: 13 }}>✋</span>
-                <p style={{ fontSize: 10, fontWeight: 800, color: "#92400e", margin: 0 }}>Motor Mode ON — Larger tap targets enabled</p>
+              <div className="flex items-center gap-2.5 rounded-2xl px-4 py-2.5"
+                style={{ background: "linear-gradient(135deg, #d97706, #b45309)" }}>
+                <Hand size={13} color="white" />
+                <div className="flex-1">
+                  <p style={{ fontSize: 10, fontWeight: 900, color: "white", margin: 0 }}>
+                    Motor Mode ON — Large targets &amp; hold-to-send SOS
+                  </p>
+                  <p style={{ fontSize: 9, color: "rgba(255,255,255,0.75)", margin: 0, marginTop: 1 }}>
+                    Hold the SOS button for 3 seconds to send — prevents accidental triggers
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -156,29 +225,74 @@ export default function ResidentDashboard({ onNavigate, reportAcceptedDismissed,
 
           {/* Big SOS circle */}
           <button
-            onClick={openSOS}
+            onMouseDown={startHold}
+            onMouseUp={cancelHold}
+            onMouseLeave={cancelHold}
+            onTouchStart={startHold}
+            onTouchEnd={cancelHold}
+            onTouchCancel={cancelHold}
+            onClick={motor ? undefined : openSOS}
             aria-label="SOS Emergency Button"
-            className="relative flex items-center justify-center active:scale-95 transition-transform"
-            style={{ width: motor ? 160 : 140, height: motor ? 160 : 140 }}
+            className="relative flex items-center justify-center transition-transform"
+            style={{
+              width: motor ? 170 : 140,
+              height: motor ? 170 : 140,
+              transform: holdProgress > 0 ? "scale(0.96)" : "scale(1)",
+              transition: "transform 0.1s",
+            }}
           >
+            {/* Outer ping */}
             <span className="absolute rounded-full animate-ping" style={{ inset: 0, background: "rgba(211,47,47,0.12)" }} />
             <span className="absolute rounded-full" style={{ inset: 12, background: "rgba(211,47,47,0.10)" }} />
+
+            {/* Hold-progress ring (motor mode only) */}
+            {motor && (
+              <svg
+                className="absolute"
+                style={{ inset: 0, width: "100%", height: "100%", transform: "rotate(-90deg)" }}
+                viewBox="0 0 170 170"
+              >
+                {/* Track */}
+                <circle cx="85" cy="85" r="78" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="5" />
+                {/* Progress */}
+                <circle
+                  cx="85" cy="85" r="78"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 78}`}
+                  strokeDashoffset={`${2 * Math.PI * 78 * (1 - holdProgress / 100)}`}
+                  style={{ transition: "stroke-dashoffset 0.03s linear" }}
+                />
+              </svg>
+            )}
+
+            {/* Button face */}
             <span
               className="absolute rounded-full flex flex-col items-center justify-center gap-0.5"
               style={{
                 inset: 22,
                 background: "linear-gradient(135deg, #B71C1C, #FF5252)",
-                boxShadow: "0 8px 32px rgba(211,47,47,0.55)",
+                boxShadow: motor
+                  ? "0 12px 40px rgba(211,47,47,0.7)"
+                  : "0 8px 32px rgba(211,47,47,0.55)",
               }}
             >
-              <span className="text-white font-black tracking-widest" style={{ fontSize: blind ? 26 : 20 }}>SOS</span>
-              <span className="text-white/70 font-semibold tracking-wider" style={{ fontSize: blind ? 10 : 8 }}>EMERGENCY</span>
+              <span className="text-white font-black tracking-widest" style={{ fontSize: blind ? 26 : motor ? 24 : 20 }}>SOS</span>
+              <span className="text-white/70 font-semibold tracking-wider" style={{ fontSize: blind ? 10 : 8 }}>
+                {motor ? (holdProgress > 0 ? "HOLD..." : "HOLD 3s") : "EMERGENCY"}
+              </span>
             </span>
           </button>
 
-          <p className="font-black text-gray-900 mt-3" style={{ fontSize: blind ? 16 : 14 }}>Quick Emergency Report</p>
+          <p className="font-black text-gray-900 mt-3" style={{ fontSize: blind ? 16 : motor ? 15 : 14 }}>
+            {motor ? "Hold-to-Send Emergency SOS" : "Quick Emergency Report"}
+          </p>
           <p className="text-gray-400 mt-0.5 text-center" style={{ fontSize: blind ? 12 : 10 }}>
-            Faster than calling a hotline — report in under 5 seconds
+            {motor
+              ? "Hold the button for 3 seconds to send — prevents accidental triggers"
+              : "Faster than calling a hotline — report in under 5 seconds"}
           </p>
         </div>
 
@@ -186,17 +300,17 @@ export default function ResidentDashboard({ onNavigate, reportAcceptedDismissed,
         <div className="mx-4 mt-3">
           <button
             onClick={() => onNavigate("incident-report")}
-            className="w-full bg-white rounded-2xl px-4 py-3 flex items-center gap-3 active:bg-gray-50 transition-colors"
-            style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
+            className="w-full bg-white rounded-2xl px-4 flex items-center gap-3 active:bg-gray-50 transition-colors"
+            style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)", paddingTop: motor ? 16 : 12, paddingBottom: motor ? 16 : 12 }}
           >
-            <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
-              <FileText size={16} className="text-[#D32F2F]" />
+            <div className={`rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0 ${motor ? "w-12 h-12" : "w-9 h-9"}`}>
+              <FileText size={motor ? 20 : 16} className="text-[#D32F2F]" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-xs font-bold text-gray-800">Detailed Report</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">Add description, photo & more info</p>
+              <p className={`font-bold text-gray-800 ${motor ? "text-sm" : "text-xs"}`}>Detailed Report</p>
+              <p className={`text-gray-400 mt-0.5 ${motor ? "text-xs" : "text-[10px]"}`}>Add description, photo & more info</p>
             </div>
-            <ChevronRight size={15} className="text-gray-300" />
+            <ChevronRight size={motor ? 18 : 15} className="text-gray-300" />
           </button>
         </div>
 
@@ -204,28 +318,32 @@ export default function ResidentDashboard({ onNavigate, reportAcceptedDismissed,
         <div className="mx-4 mt-2 grid grid-cols-2 gap-2">
           <button
             onClick={() => onNavigate("map")}
-            className="bg-white rounded-2xl px-3 py-3 flex items-center gap-2.5 active:bg-gray-50 transition-colors"
-            style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
+            className="bg-white rounded-2xl flex items-center gap-2.5 active:bg-gray-50 transition-colors"
+            style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)", padding: motor ? "14px 12px" : "12px" }}
           >
-            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <MapPin size={15} className="text-blue-500" />
+            <div className={`rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 ${motor ? "w-11 h-11" : "w-8 h-8"}`}>
+              <MapPin size={motor ? 18 : 15} className="text-blue-500" />
             </div>
             <div className="text-left">
-              <p className="text-[10px] font-bold text-gray-800 leading-tight">Evacuation</p>
-              <p className="text-[9px] text-gray-400">Centers nearby</p>
+              <p className={`font-bold text-gray-800 leading-tight ${motor ? "text-xs" : "text-[10px]"}`}>Evacuation</p>
+              <p className={`text-gray-400 ${motor ? "text-[11px]" : "text-[9px]"}`}>Centers nearby</p>
             </div>
           </button>
           <button
             onClick={() => onNavigate("ai-assistant")}
-            className="rounded-2xl px-3 py-3 flex items-center gap-2.5 active:opacity-90 transition-opacity"
-            style={{ background: "linear-gradient(135deg, #4f46e5, #7c3aed)", boxShadow: "0 4px 12px rgba(99,102,241,0.3)" }}
+            className="rounded-2xl flex items-center gap-2.5 active:opacity-90 transition-opacity"
+            style={{
+              background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+              boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
+              padding: motor ? "14px 12px" : "12px",
+            }}
           >
-            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-              <Sparkles size={15} className="text-white" />
+            <div className={`rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 ${motor ? "w-11 h-11" : "w-8 h-8"}`}>
+              <Sparkles size={motor ? 18 : 15} className="text-white" />
             </div>
             <div className="text-left">
-              <p className="text-[10px] font-bold text-white leading-tight">ResQ AI</p>
-              <p className="text-[9px] text-white/70">Ask anything</p>
+              <p className={`font-bold text-white leading-tight ${motor ? "text-xs" : "text-[10px]"}`}>ResQ AI</p>
+              <p className={`text-white/70 ${motor ? "text-[11px]" : "text-[9px]"}`}>Ask anything</p>
             </div>
           </button>
         </div>
@@ -303,6 +421,61 @@ export default function ResidentDashboard({ onNavigate, reportAcceptedDismissed,
       </div>
 
       <BottomNav activeScreen="resident-dashboard" onNavigate={onNavigate} role="resident" />
+
+      {/* ── MOTOR MODE: sticky floating SOS button (always reachable) ── */}
+      {motor && !sosOpen && (
+        <button
+          onMouseDown={startHold}
+          onMouseUp={cancelHold}
+          onMouseLeave={cancelHold}
+          onTouchStart={startHold}
+          onTouchEnd={cancelHold}
+          onTouchCancel={cancelHold}
+          aria-label="Quick SOS — hold 3 seconds"
+          style={{
+            position: "absolute",
+            bottom: 72,
+            right: 12,
+            width: 64,
+            height: 64,
+            borderRadius: "50%",
+            background: holdProgress > 0
+              ? `conic-gradient(white ${holdProgress * 3.6}deg, rgba(255,255,255,0.2) 0deg)`
+              : "linear-gradient(135deg, #B71C1C, #FF5252)",
+            boxShadow: "0 6px 24px rgba(211,47,47,0.6)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 30,
+            border: "3px solid white",
+            transition: "transform 0.1s",
+            transform: holdProgress > 0 ? "scale(0.92)" : "scale(1)",
+          }}
+        >
+          <Zap size={20} color={holdProgress > 0 ? "#B71C1C" : "white"} />
+          <span style={{
+            fontSize: 7,
+            fontWeight: 900,
+            color: holdProgress > 0 ? "#B71C1C" : "white",
+            letterSpacing: "0.03em",
+          }}>
+            {holdProgress > 0 ? "HOLD..." : "HOLD 3s"}
+          </span>
+        </button>
+      )}
+
+      {/* ── DEAF MODE: screen flash on new alert ── */}
+      {deaf && alertVisible && (
+        <div
+          style={{
+            position: "absolute", inset: 0, zIndex: 25,
+            background: "rgba(251,191,36,0.25)",
+            animation: "deafflash 1.5s ease-in-out 3",
+            pointerEvents: "none",
+          }}
+        />
+      )}
 
       {/* Report Accepted Notification */}
       <ReportAcceptedAlert
@@ -408,9 +581,13 @@ export default function ResidentDashboard({ onNavigate, reportAcceptedDismissed,
                 <button
                   onClick={() => selectedType && setSosStep("capture")}
                   disabled={!selectedType}
-                  className="w-full py-3.5 rounded-2xl text-white font-black text-sm transition-all active:opacity-80"
-                  style={{ background: selectedType ? "linear-gradient(135deg, #B71C1C, #FF5252)" : "#d1d5db" }}>
-                  Next — Capture Photo & Description
+                  className="w-full rounded-2xl text-white font-black text-sm transition-all active:opacity-80"
+                  style={{
+                    padding: motor ? "18px" : "14px",
+                    background: selectedType ? "linear-gradient(135deg, #B71C1C, #FF5252)" : "#d1d5db",
+                    fontSize: motor ? 15 : 14,
+                  }}>
+                  {motor ? "✓ Next Step" : "Next — Capture Photo & Description"}
                 </button>
                 <p className="text-center text-[9px] text-gray-400 mt-2">Your location and profile are automatically attached</p>
               </>
@@ -486,14 +663,17 @@ export default function ResidentDashboard({ onNavigate, reportAcceptedDismissed,
 
                 <div className="flex gap-2">
                   <button onClick={() => setSosStep("type")}
-                    className="flex-1 py-3.5 rounded-2xl border border-gray-200 text-gray-600 font-bold text-sm active:bg-gray-50">
+                    className="flex-1 rounded-2xl border border-gray-200 text-gray-600 font-bold text-sm active:bg-gray-50"
+                    style={{ padding: motor ? "18px 0" : "14px 0" }}>
                     Back
                   </button>
                   <button
                     onClick={handleSOS}
                     disabled={!photoTaken && !voiceDesc}
-                    className="flex-[2] py-3.5 rounded-2xl text-white font-black text-sm active:opacity-80 flex items-center justify-center gap-2"
+                    className="flex-[2] rounded-2xl text-white font-black active:opacity-80 flex items-center justify-center gap-2"
                     style={{
+                      padding: motor ? "18px 0" : "14px 0",
+                      fontSize: motor ? 15 : 14,
                       background: (photoTaken || voiceDesc) ? "linear-gradient(135deg, #B71C1C, #FF5252)" : "#d1d5db",
                       boxShadow: (photoTaken || voiceDesc) ? "0 4px 20px rgba(211,47,47,0.4)" : "none",
                     }}>

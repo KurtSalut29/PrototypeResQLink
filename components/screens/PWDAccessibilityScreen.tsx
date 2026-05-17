@@ -14,10 +14,11 @@ const modes = [
     bg: "#f5f3ff",
     border: "#ddd6fe",
     effects: [
-      "Extra-large text throughout the app",
-      "High contrast colors on all buttons",
-      "Larger SOS button for easier tapping",
-      "Screen reader friendly labels",
+      "Extra-large SOS button (170px) for easier tapping",
+      "Larger text on all labels and headings",
+      "High contrast colors throughout the app",
+      "Screen reader friendly ARIA labels on all buttons",
+      "Voice command assistant (ResQ Voice) activated",
     ],
   },
   {
@@ -29,10 +30,11 @@ const modes = [
     bg: "#f0f9ff",
     border: "#bae6fd",
     effects: [
-      "Yellow visual alert bar on dashboard",
-      "All alerts shown as text banners",
-      "Vibration feedback on SOS actions",
-      "No audio dependency anywhere",
+      "Pulsing yellow alert bar always visible at top of screen",
+      "Screen flashes amber when a new emergency alert arrives",
+      "All incoming alerts shown as full visual text banners",
+      "No audio dependency — every notification is visual",
+      "Vibration feedback on SOS send and alert receipt",
     ],
   },
   {
@@ -44,10 +46,11 @@ const modes = [
     bg: "#fffbeb",
     border: "#fde68a",
     effects: [
-      "Oversized SOS button (160px)",
-      "Larger tap targets on all buttons",
-      "Reduced multi-step interactions",
-      "Sticky action buttons stay visible",
+      "Hold-to-send SOS — hold 3 seconds to confirm, prevents accidental triggers",
+      "Circular progress ring shows hold progress on the SOS button",
+      "Oversized SOS button (170px) with stronger shadow",
+      "All action buttons are taller (48px+ tap targets)",
+      "Sticky floating SOS button always visible while scrolling",
     ],
   },
 ];
