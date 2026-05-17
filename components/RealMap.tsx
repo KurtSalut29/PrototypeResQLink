@@ -285,8 +285,10 @@ export default function RealMap({
       mapRef.current = null;
     }
 
+    let cancelled = false;
+
     import("leaflet").then(async L => {
-      if (!containerRef.current) return;
+      if (cancelled || !containerRef.current) return;
       if ((containerRef.current as any)._leaflet_id) return;
 
       const map = L.map(containerRef.current, {

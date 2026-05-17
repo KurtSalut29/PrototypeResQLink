@@ -1,7 +1,11 @@
 "use client";
-import { ArrowLeft, Flame, Waves, HeartPulse, Car, ShieldAlert, MoreHorizontal } from "lucide-react";
+import { ArrowLeft, Flame, Waves, HeartPulse, Car, ShieldAlert, ChevronRight } from "lucide-react";
+import BottomNav from "../navigation/BottomNav";
 
-interface Props { onBack: () => void; }
+interface Props {
+  onBack: () => void;
+  onNavigate?: (screen: string) => void;
+}
 
 const reports = [
   { id: "INC-20240501-003", type: "Medical Emergency", icon: HeartPulse, color: "#ef4444", bg: "#fef2f2", status: "In Progress", statusColor: "bg-orange-100 text-orange-700", location: "Brgy. Padre Iñigo, Naval", date: "May 1, 2024 · 9:01 AM" },
@@ -11,9 +15,10 @@ const reports = [
   { id: "INC-20240315-005", type: "Crime",             icon: ShieldAlert, color: "#9333ea", bg: "#faf5ff", status: "Resolved",    statusColor: "bg-green-100 text-green-700",  location: "Brgy. Poblacion, Naval",   date: "Mar 15, 2024 · 2:00 PM" },
 ];
 
-export default function MyReportsScreen({ onBack }: Props) {
+export default function MyReportsScreen({ onBack, onNavigate }: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F5F5F5" }}>
+      {/* Header */}
       <div style={{ background: "white", padding: "36px 16px 12px", flexShrink: 0, boxShadow: "0 1px 0 #f0f0f0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={onBack} style={{ width: 32, height: 32, borderRadius: 10, background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}>
@@ -26,14 +31,34 @@ export default function MyReportsScreen({ onBack }: Props) {
         </div>
       </div>
 
-      <div className="phone-scroll" style={{ flex: 1, overflowY: "auto", minHeight: 0, padding: "12px 16px 32px", display: "flex", flexDirection: "column", gap: 8 }}>
+      {/* Report list */}
+      <div className="phone-scroll" style={{ flex: 1, overflowY: "auto", minHeight: 0, padding: "12px 16px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
         {reports.map((r) => {
           const Icon = r.icon;
           return (
-            <div key={r.id} style={{ background: "white", borderRadius: 16, padding: "12px 14px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", display: "flex", gap: 12, alignItems: "flex-start" }}>
+            <button
+              key={r.id}
+              onClick={() => onNavigate?.("incident-detail")}
+              style={{
+                background: "white",
+                borderRadius: 16,
+                padding: "12px 14px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                display: "flex",
+                gap: 12,
+                alignItems: "flex-start",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
+                width: "100%",
+              }}
+            >
+              {/* Icon */}
               <div style={{ width: 36, height: 36, borderRadius: 10, background: r.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Icon size={16} color={r.color} />
               </div>
+
+              {/* Info */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
                   <p style={{ fontSize: 12, fontWeight: 800, color: "#111", margin: 0 }}>{r.type}</p>
@@ -43,10 +68,20 @@ export default function MyReportsScreen({ onBack }: Props) {
                 <p style={{ fontSize: 10, color: "#9ca3af", margin: "2px 0 0" }}>{r.location}</p>
                 <p style={{ fontSize: 9, color: "#d1d5db", margin: "2px 0 0" }}>{r.date}</p>
               </div>
-            </div>
+
+              {/* Chevron */}
+              <div style={{ display: "flex", alignItems: "center", alignSelf: "center", flexShrink: 0 }}>
+                <ChevronRight size={14} color="#d1d5db" />
+              </div>
+            </button>
           );
         })}
       </div>
+
+      {/* Bottom nav */}
+      {onNavigate && (
+        <BottomNav activeScreen="my-reports" onNavigate={onNavigate} role="resident" />
+      )}
     </div>
   );
 }

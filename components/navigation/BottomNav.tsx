@@ -11,7 +11,7 @@ export default function BottomNav({ activeScreen, onNavigate, role }: BottomNavP
   const tabs =
     role === "resident" ? [
       { id: "resident-dashboard",    icon: Home,      label: "Home",      badge: null },
-      { id: "incident-report",       icon: FileText,  label: "Reports",   badge: null },
+      { id: "my-reports",             icon: FileText,  label: "Reports",   badge: null },
       { id: "map",                   icon: Map,       label: "Map",       badge: null },
       { id: "profile",               icon: User,      label: "Profile",   badge: null },
     ] : role === "admin" ? [

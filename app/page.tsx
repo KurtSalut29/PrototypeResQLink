@@ -176,7 +176,7 @@ function AppShell() {
       case "profile":             return <ProfileScreen role={role} onNavigate={handleNavigation} />;
       case "ai-assistant":        return <AIAssistantScreen onBack={goBack} />;
       case "pwd-accessibility":   return <PWDAccessibilityScreen onBack={goBack} />;
-      case "my-reports":          return <MyReportsScreen onBack={goBack} />;
+      case "my-reports":          return <MyReportsScreen onBack={goBack} onNavigate={handleNavigation} />;
       case "notifications":       return <NotificationsScreen onBack={goBack} />;
       case "saved-locations":     return <SavedLocationsScreen onBack={goBack} />;
       case "change-password":     return <ChangePasswordScreen onBack={goBack} />;
@@ -185,7 +185,7 @@ function AppShell() {
   };
 
   const residentScreens: Screen[] = [
-    "resident-dashboard", "incident-report", "incident-detail", "map", "profile", "ai-assistant", "pwd-accessibility",
+    "resident-dashboard", "incident-report", "incident-detail", "map", "profile", "ai-assistant", "pwd-accessibility", "my-reports",
   ];
   const isResident = residentScreens.includes(screen);
 
